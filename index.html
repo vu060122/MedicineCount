@@ -103,7 +103,7 @@
 
     <!-- ================= 彈出視窗區塊 ================= -->
 
-    <!-- 全域共用確認視窗 (取代原生的 confirm) -->
+    <!-- 全域共用確認視窗 -->
     <div id="confirmModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-[60] p-4 transition-opacity">
         <div class="bg-white rounded-2xl p-6 w-full max-w-xs shadow-xl text-center">
             <h3 id="confirmTitle" class="text-lg font-bold mb-2 text-gray-800">確認</h3>
@@ -170,7 +170,6 @@
             </div>
             
             <div class="space-y-5">
-                <!-- 匯出/匯入區 -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                     <p class="text-xs text-gray-500 mb-1">將下方代碼複製存起來，或是貼上舊代碼來還原紀錄。</p>
                     <textarea id="backupDataInput" rows="4" placeholder="請貼上備份代碼..." class="w-full p-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4A8E8B] outline-none font-mono"></textarea>
@@ -185,7 +184,6 @@
                     </div>
                 </div>
 
-                <!-- 危險操作區 -->
                 <div class="pt-4 border-t border-red-100 text-center">
                     <button onclick="requestResetAll()" class="text-sm text-red-400 hover:text-red-600 font-medium py-2 px-4 rounded-lg hover:bg-red-50 transition-colors">
                         ⚠️ 清除所有紀錄重新開始
@@ -198,21 +196,62 @@
     <script>
         lucide.createIcons();
 
-        // ======= 自動生成 Apple Icon =======
+        // ======= 自動生成 Apple Icon (膠囊設計) =======
         function setupAppleIcon() {
             const canvas = document.createElement('canvas');
             canvas.width = 180; canvas.height = 180;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#4A8E8B'; ctx.fillRect(0, 0, 180, 180);
-            ctx.fillStyle = '#FFFFFF'; ctx.font = 'bold 90px sans-serif';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText('藥', 90, 95);
+            
+            // 背景顏色 (柔和的藍綠色)
+            ctx.fillStyle = '#4A8E8B'; 
+            ctx.fillRect(0, 0, 180, 180);
+            
+            // 繪製膠囊 (旋轉45度)
+            ctx.save();
+            ctx.translate(90, 90); // 移到中心點
+            ctx.rotate(45 * Math.PI / 180); // 旋轉45度
+            
+            const capsuleWidth = 60;
+            const capsuleHeight = 110;
+            const radius = capsuleWidth / 2;
+            
+            // 膠囊下半部 (白色)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(0, capsuleHeight/2 - radius, radius, 0, Math.PI, false); // 底部圓弧
+            ctx.lineTo(-radius, 0); // 畫到中間左邊
+            ctx.lineTo(radius, 0);  // 畫到中間右邊
+            ctx.closePath();
+            ctx.fill();
+
+            // 膠囊上半部 (粉橘色)
+            ctx.fillStyle = '#D96C4A';
+            ctx.beginPath();
+            ctx.arc(0, -capsuleHeight/2 + radius, radius, Math.PI, 0, false); // 頂部圓弧
+            ctx.lineTo(radius, 0); // 畫到中間右邊
+            ctx.lineTo(-radius, 0); // 畫到中間左邊
+            ctx.closePath();
+            ctx.fill();
+            
+            // 膠囊中間的接縫線 (些微陰影增加立體感)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(-radius, -2, capsuleWidth, 4);
+            
+            // 加上一點高光
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.beginPath();
+            ctx.arc(-10, -30, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+
             const link = document.createElement('link');
             link.rel = 'apple-touch-icon';
             link.href = canvas.toDataURL('image/png');
             document.head.appendChild(link);
         }
         setupAppleIcon();
+        // ===============================================
 
         // ================= 共用確認視窗邏輯 =================
         let confirmCallback = null;
@@ -376,7 +415,6 @@
             }
         }
 
-        // ================= 刪除邏輯改版 (使用自訂確認框) =================
         function requestDelete(type, id) {
             showConfirm(
                 '刪除紀錄', 
@@ -427,7 +465,6 @@
             }
         }
 
-        // ================= 匯入邏輯改版 (使用自訂確認框) =================
         function importData() {
             const str = document.getElementById('backupDataInput').value;
             if (!str) {
@@ -459,7 +496,6 @@
             }
         }
 
-        // ================= 重置邏輯改版 (使用自訂確認框) =================
         function requestResetAll() {
             showConfirm(
                 '⚠️ 清除所有紀錄', 
